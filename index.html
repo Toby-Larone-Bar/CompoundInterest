@@ -266,6 +266,7 @@
             <p>Average UK salary (2024): <strong>£34,000/year</strong></p>
             <p>Recommended savings: <strong>£250/month</strong></p>
             <p>Average long-term stock return: <strong>7% annually</strong></p>
+            <p>Average inflation rate: <strong>2.5% annually</strong> (used to calculate real buying power)</p>
             <p>Adjust figures to explore your own growth scenario.</p>
           </div>
         </div>
@@ -349,11 +350,7 @@
 
         document.getElementById('resultChart').style.display = 'block';
         document.getElementById('summaryTable').style.display = 'table';
-
-        // ✅ ENABLE SCROLL
         pageWrapper.style.overflow = 'auto';
-
-        // Scroll into view
         document.getElementById('resultChart').scrollIntoView({ behavior: 'smooth' });
       }
 
@@ -415,10 +412,25 @@
       }
 
       function renderTable(balances, deposits) {
-        let html = `<thead><tr><th>Year</th><th>Total Deposits</th><th>Balance</th></tr></thead><tbody>`;
+        const inflationRate = 0.025; // 2.5% annual inflation
+
+        let html = `<thead><tr>
+                      <th>Year</th>
+                      <th>Total Deposits</th>
+                      <th>Balance</th>
+                      <th>Buying Power (Today’s £)</th>
+                    </tr></thead><tbody>`;
+
         for (let i = 0; i < balances.length; i++) {
-          html += `<tr><td>Year ${i}</td><td>${formatCurrency(deposits[i])}</td><td>${formatCurrency(balances[i])}</td></tr>`;
+          const adjusted = balances[i] / Math.pow(1 + inflationRate, i);
+          html += `<tr>
+                    <td>Year ${i}</td>
+                    <td>${formatCurrency(deposits[i])}</td>
+                    <td>${formatCurrency(balances[i])}</td>
+                    <td>${formatCurrency(adjusted)}</td>
+                  </tr>`;
         }
+
         html += '</tbody>';
         summaryTable.innerHTML = html;
       }
@@ -435,11 +447,8 @@
 
         if (chartInstance) chartInstance.destroy();
         summaryTable.innerHTML = '';
-
         document.getElementById('resultChart').style.display = 'none';
         document.getElementById('summaryTable').style.display = 'none';
-
-        // ❌ DISABLE SCROLL
         pageWrapper.style.overflow = 'hidden';
       });
     });
