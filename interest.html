@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Compound Interest Calculator</title>
+  <style>
+    :root {
+      --primary: #6a0dad;
+      --accent: #ffcc00;
+      --bg: #000;
+      --text: #fff;
+      --secondary: #0f0;
+      --error: #f00;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+
+    #pageWrapper {
+      max-height: 100vh;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      color: var(--accent);
+      font-size: 2.5rem;
+      margin: 1rem 0 0.5rem;
+    }
+
+    .calculator {
+      background: #111;
+      border-radius: 1rem;
+      padding: 2rem;
+      width: 100%;
+      max-width: 1200px;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-wrapper {
+      flex: 1;
+    }
+
+    .form-layout {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      justify-content: space-between;
+    }
+
+    .form-grid {
+      flex: 2;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+    }
+
+    .form-column {
+      flex: 1 1 300px;
+    }
+
+    .form-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.2rem;
+    }
+
+    .form-row label {
+      width: 180px;
+      text-align: right;
+      margin-right: 1rem;
+      font-weight: 600;
+      user-select: none;
+    }
+
+    .form-row input[type="number"],
+    .form-row select {
+      flex: 1;
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      border: none;
+      max-width: 220px;
+    }
+
+    .radio-group {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.2rem;
+    }
+
+    .radio-group label.group-label {
+      width: 180px;
+      text-align: right;
+      margin-right: 1rem;
+      font-weight: 600;
+      user-select: none;
+    }
+
+    .radio-options {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .radio-options label {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      user-select: none;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 1.5rem;
+    }
+
+    button {
+      padding: 0.75rem 1rem;
+      background-color: var(--primary);
+      color: var(--text);
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s;
+      min-width: 120px;
+    }
+
+    button:hover {
+      background-color: var(--secondary);
+      color: #000;
+    }
+
+    .info-box {
+      flex: 1;
+      background: #222;
+      border-radius: 1rem;
+      padding: 1rem;
+      font-size: 0.95rem;
+      color: #ccc;
+      min-width: 250px;
+    }
+
+    .info-box h2 {
+      color: var(--accent);
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    canvas,
+    table#summaryTable {
+      display: none;
+      margin-top: 2rem;
+      width: 100% !important;
+      height: auto !important;
+    }
+
+    table {
+      border-collapse: collapse;
+      background: #111;
+      color: #fff;
+    }
+
+    th, td {
+      padding: 0.75rem 1rem;
+      text-align: right;
+      border-bottom: 1px solid #333;
+    }
+
+    th {
+      background-color: #222;
+    }
+
+    @media screen and (max-width: 768px) {
+      .form-layout, .form-grid {
+        flex-direction: column;
+      }
+      .form-row label,
+      .radio-group label.group-label {
+        width: 100%;
+        text-align: left;
+        margin-bottom: 0.3rem;
+      }
+      .form-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .radio-group {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .radio-options {
+        gap: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="pageWrapper">
+    <h1>Compound Interest Calculator</h1>
+    <div class="calculator">
+      <div class="form-wrapper">
+        <div class="form-layout">
+          <div class="form-grid">
+            <div class="form-column">
+              <div class="form-row">
+                <label for="initial">Initial Investment (£)</label>
+                <input type="number" id="initial" />
+              </div>
+              <div class="form-row">
+                <label for="contribution">Contributions (£)</label>
+                <input type="number" id="contribution" />
+              </div>
+              <div class="form-row">
+                <label for="interestRate">Interest Rate (%)</label>
+                <input type="number" step="0.01" id="interestRate" />
+              </div>
+              <div class="form-row">
+                <label for="years">Number of Years</label>
+                <select id="years"></select>
+              </div>
+            </div>
+            <div class="form-column">
+              <div class="radio-group">
+                <label class="group-label">Contribution Frequency</label>
+                <div class="radio-options">
+                  <label><input type="radio" name="frequency" value="monthly" checked /> Monthly</label>
+                  <label><input type="radio" name="frequency" value="yearly" /> Yearly</label>
+                </div>
+              </div>
+              <div class="radio-group">
+                <label class="group-label">Contribution Timing</label>
+                <div class="radio-options">
+                  <label><input type="radio" name="timing" value="start" checked /> Beginning of Period</label>
+                  <label><input type="radio" name="timing" value="end" /> End of Period</label>
+                </div>
+              </div>
+              <div class="buttons">
+                <button id="calculateBtn">Calculate</button>
+                <button id="clearBtn" style="background-color: #444;">Clear</button>
+              </div>
+            </div>
+          </div>
+          <div class="info-box">
+            <h2>UK Financial Averages</h2>
+            <p>Average UK salary (2024): <strong>£34,000/year</strong></p>
+            <p>Recommended savings: <strong>£250/month</strong></p>
+            <p>Average long-term stock return: <strong>7% annually</strong></p>
+            <p>Adjust figures to explore your own growth scenario.</p>
+          </div>
+        </div>
+      </div>
+      <canvas id="resultChart"></canvas>
+      <table id="summaryTable"></table>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const initialInput = document.getElementById('initial');
+      const contributionInput = document.getElementById('contribution');
+      const interestRateInput = document.getElementById('interestRate');
+      const yearsSelect = document.getElementById('years');
+      const calculateBtn = document.getElementById('calculateBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      const summaryTable = document.getElementById('summaryTable');
+      const ctx = document.getElementById('resultChart').getContext('2d');
+      const pageWrapper = document.getElementById('pageWrapper');
+      let chartInstance;
+
+      for (let i = 1; i <= 99; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `${i} years`;
+        yearsSelect.appendChild(opt);
+      }
+
+      function getRadioValue(name) {
+        return document.querySelector(`input[name="${name}"]:checked`).value;
+      }
+
+      function formatCurrency(value) {
+        return parseFloat(value).toLocaleString('en-GB', {
+          style: 'currency',
+          currency: 'GBP',
+          minimumFractionDigits: 2,
+        });
+      }
+
+      function calculateCompoundInterest() {
+        const initial = parseFloat(initialInput.value) || 0;
+        const contribution = parseFloat(contributionInput.value) || 0;
+        const frequency = getRadioValue('frequency');
+        const timing = getRadioValue('timing');
+        const rate = parseFloat(interestRateInput.value) / 100 || 0;
+        const years = parseInt(yearsSelect.value) || 0;
+
+        const periodsPerYear = frequency === 'monthly' ? 12 : 1;
+        const totalPeriods = years * periodsPerYear;
+        const interestPerPeriod = rate / periodsPerYear;
+
+        let balance = initial;
+        let deposit = initial;
+        const balances = [balance];
+        const deposits = [deposit];
+
+        for (let i = 1; i <= totalPeriods; i++) {
+          if (timing === 'start') {
+            balance += contribution;
+            deposit += contribution;
+          }
+
+          balance *= (1 + interestPerPeriod);
+
+          if (timing === 'end') {
+            balance += contribution;
+            deposit += contribution;
+          }
+
+          if (i % periodsPerYear === 0) {
+            balances.push(balance);
+            deposits.push(deposit);
+          }
+        }
+
+        renderChart(balances, deposits);
+        renderTable(balances, deposits);
+
+        document.getElementById('resultChart').style.display = 'block';
+        document.getElementById('summaryTable').style.display = 'table';
+
+        // ✅ ENABLE SCROLL
+        pageWrapper.style.overflow = 'auto';
+
+        // Scroll into view
+        document.getElementById('resultChart').scrollIntoView({ behavior: 'smooth' });
+      }
+
+      function renderChart(balances, deposits) {
+        const labels = balances.map((_, i) => `Year ${i}`);
+        if (chartInstance) chartInstance.destroy();
+
+        chartInstance = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: 'Deposits (£)',
+                data: deposits,
+                borderColor: '#ffcc00',
+                backgroundColor: 'rgba(255, 204, 0, 0.2)',
+                fill: false,
+                tension: 0.3
+              },
+              {
+                label: 'Projected Balance (£)',
+                data: balances,
+                borderColor: '#00ff00',
+                backgroundColor: 'rgba(0, 255, 0, 0.2)',
+                fill: true,
+                tension: 0.3
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                labels: { color: '#fff' }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const label = context.dataset.label || '';
+                    const value = context.parsed.y;
+                    return `${label}: ${formatCurrency(value)}`;
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                ticks: { color: '#fff' },
+                grid: { color: '#444' }
+              },
+              y: {
+                ticks: { color: '#fff' },
+                grid: { color: '#444' }
+              }
+            }
+          }
+        });
+      }
+
+      function renderTable(balances, deposits) {
+        let html = `<thead><tr><th>Year</th><th>Total Deposits</th><th>Balance</th></tr></thead><tbody>`;
+        for (let i = 0; i < balances.length; i++) {
+          html += `<tr><td>Year ${i}</td><td>${formatCurrency(deposits[i])}</td><td>${formatCurrency(balances[i])}</td></tr>`;
+        }
+        html += '</tbody>';
+        summaryTable.innerHTML = html;
+      }
+
+      calculateBtn.addEventListener('click', calculateCompoundInterest);
+
+      clearBtn.addEventListener('click', () => {
+        initialInput.value = '';
+        contributionInput.value = '';
+        interestRateInput.value = '';
+        yearsSelect.selectedIndex = 0;
+        document.querySelector('input[name="frequency"][value="monthly"]').checked = true;
+        document.querySelector('input[name="timing"][value="start"]').checked = true;
+
+        if (chartInstance) chartInstance.destroy();
+        summaryTable.innerHTML = '';
+
+        document.getElementById('resultChart').style.display = 'none';
+        document.getElementById('summaryTable').style.display = 'none';
+
+        // ❌ DISABLE SCROLL
+        pageWrapper.style.overflow = 'hidden';
+      });
+    });
+  </script>
+</body>
+</html>
